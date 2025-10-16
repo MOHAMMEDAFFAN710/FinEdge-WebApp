@@ -1,1 +1,1 @@
-# FinEdge-WebApp
+# FinTrix-WebApp
