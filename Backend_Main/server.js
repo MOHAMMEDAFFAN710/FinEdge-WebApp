@@ -1,8 +1,15 @@
-// server.js - entrypoint that boots the Express app
 const express = require('express');
 require('dotenv').config();
 
+const sequelize = require('./src/config/database');
+const connectMongo = require('./src/config/mongo'); // MongoDB connection function
+
+const User = require('./src/models/user'); 
+
 const app = express();
+
+// Middleware (for JSON request parsing)
+app.use(express.json());
 
 // Basic health check route
 app.get('/health', (req, res) => {
@@ -18,8 +25,24 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Fintrix server listening on port ${PORT}`);
-});
+(async () => {
+  try {
+    // Connect PostgreSQL
+    await sequelize.sync({ alter: true });
+    console.log('✅ PostgreSQL connected and synchronized');
+
+    // Connect MongoDB
+    await connectMongo();
+    console.log('✅ MongoDB connected successfully');
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`🚀 Fintrix server listening on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Database connection failed:', err);
+  }
+})();
 
 module.exports = app;
+
